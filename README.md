@@ -17,7 +17,7 @@ features:
 One can generate any customised list of viral genomes. 
 Here, we compiled 833 viral sequences, including 762 viruses from 
 [VirTect](https://github.com/WGLab/VirTect),
-8 other viruses and 64 consensus sequences of human endogenous retroviruses 
+7 other viruses and 64 consensus sequences of human endogenous retroviruses 
 (HERVs) compiled by 
 [Vargiu et al](https://retrovirology.biomedcentral.com/articles/10.1186/s12977-015-0232-y)
 
