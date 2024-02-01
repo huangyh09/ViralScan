@@ -73,29 +73,47 @@ STAR --runThreadN 3 --runMode genomeGenerate \
 ```
 
 
-## Step 2: Align unmapped reads
-Usually, the unmapped reads are kept in the bam file when aligning it to the 
-host (e.g., human or mouse), for example, CellRanger for 10x Genomics data.
-You can obtain the unmapped reads by using flag 4 (``-f 4``) in the bam file; 
-see more discussions 
-[here](https://kb.10xgenomics.com/hc/en-us/articles/360004689632).
+## Step 2: Align unmapped or uncounted reads
+From the bam files in the cellranger (or STAR) output, you can retrieve the unmapped
+or uncounted reads easily with `samtools`. Depending on your analysis, you may choose
+unmapped or uncounted reads (I would suggest keeping **uncounted** reads to avoid 
+missing potential information).
+
+* **Keep unmapped reads**:
+  Usually, the unmapped reads are kept in the bam file when aligning it to the
+  host (e.g., human or mouse), for example, CellRanger for 10x Genomics data.
+  You can obtain the unmapped reads by using flag 4 (``-f 4``) in the bam file;
+  see more discussions
+  [here](https://kb.10xgenomics.com/hc/en-us/articles/360004689632).
+  ```bat
+     samtools view -f 4 YOUR_CellRanger_outs_Bam_file > YOUR_CellRanger_outs-f_4.sam
+  ```
+
+* **Keep uncounted reads**:
+  The STAR aligner generallly takes a gene annotation file in GTF format as input, so
+  it adds a `GX` tag to which gene a read is mapped. In the cellranger cell-by-gene UMI
+  matrix, it only uses reads with `GX` tag. Of note, the anti-sense reads do **not** a
+  GX tag. Here you can use this command to get the reads without a `GX` tag:
+  ```bat
+     samtools view YOUR_CellRanger_outs_Bam_file | \
+        grep -v "xf:i:25" > YOUR_CellRanger_outs-xf_non25.sam
+  ```
 
 Once again, STAR has nice support to take bam as input and additional command 
-line, so you can re-align the unmapped reads to viral genomes by a single 
-command line, for example,
-
+line, so now you can re-align the unmapped or uncounted reads to viral genomes 
+by a single command line, for example,
 
 ```bat
 STAR --runThreadN 20 --genomeDir YOUR_Ref_DIR \
     --soloType Droplet --soloCBwhitelist YOUR_cell_list \
-    --readFilesIn YOUR_CellRanger_outs_Bam_file --readFilesType SAM SE \
-    --readFilesCommand samtools view -f 4 \
+    --readFilesIn YOUR_CellRanger_outs-xf_non25.sam  \
+    --readFilesType SAM SE \
     --soloInputSAMattrBarcodeSeq CR UR \
     --soloInputSAMattrBarcodeQual CY UY \
     --outSAMtype BAM Unsorted 
 ```
 
-**Note 1**, here you can use the whitelist provided by cellranger (see 
+**Note**, here you can use the whitelist provided by cellranger (see 
 [STARsolo's note](https://github.com/alexdobin/STAR/blob/master/docs/STARsolo.md)
 ). However, you could also directly use the called cells from cellranger, e.g.,
 in the filtered_feature_bc_matrix folder. The command line can do the trick:
@@ -104,7 +122,10 @@ in the filtered_feature_bc_matrix folder. The command line can do the trick:
 zcat filtered_feature_bc_matrix/barcodes.tsv.gz | awk '{print substr($0, 1, length($0)-2)}' > YOUR_cell_list
 ```
 
-**Note 2**, You may want to quickly view the total reads mapped to each virus. 
+## Step 3: extract your viral UMI count matrix
+Nicely, STARsolo returns count matrix for cell-by-virus, e.g., in `Solo.out/Gene/raw/` folder.
+
+In case you may want to quickly view the total reads mapped to each virus. 
 You can use the versatile samtools by its ``idxstat`` (you may need to sort the 
 bam file first).
 
