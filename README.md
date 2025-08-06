@@ -1,6 +1,6 @@
 # STARsolo-ViralScan
 
-This repository summarise a pipeline to efficiently scan viral transcripts in 
+This repository summarizes a pipeline to efficiently scan viral transcripts in 
 single-cell RNA-seq data with 
 [STARsolo](https://github.com/alexdobin/STAR/blob/master/docs/STARsolo.md)
 
@@ -39,7 +39,7 @@ give false positives:
 In order to use STARsolo, we have to obtain a gene annotation file in GTF 
 format. Many databases, e.g., 
 [NCBI Nucleotide](https://www.ncbi.nlm.nih.gov/nuccore), have good annotations 
-of common virues. Here, as focusinig on scan viral existence, we introduce a 
+of common viruses. Here, by focusing on scanning viral existence, we introduce a 
 pseudo definition of genes by using the whole genome as a gene, hence only 
 relying on the input viral genomes.
 
@@ -50,14 +50,14 @@ python Viral_GTF_maker.py -f viral_reference/viruses_833.fasta -o YOUR_OUTPUT_DI
 ```
 
 Then you will see three output files in the output folder:
-* viruses_833.numbered.fasta: same sequences with number virus as simplier id
+* viruses_833.numbered.fasta: same sequences with numbered virus as simpler ID
 * viruses_833.numbered.gtf: the gene annotation file
 * viruses_833.id_notes.tsv: the notes for viruses
 
 
 ## Step 1c: Build STAR reference
 
-With the gene annotation at hand, now we can build the reference for running 
+With the gene annotation at hand, we can now build the reference for running 
 STARsolo.
 
 For 10x Genomics data, you can use the following settings, but you can also 
@@ -90,14 +90,20 @@ missing potential information).
   ```
 
 * **Keep uncounted reads**:
-  The STAR aligner generallly takes a gene annotation file in GTF format as input, so
-  it adds a `GX` tag to which gene a read is mapped. In the cellranger cell-by-gene UMI
-  matrix, it only uses reads with `GX` tag. Of note, the anti-sense reads do **not** a
-  GX tag. Here you can use this command to get the reads without a `GX` tag:
+  The STAR aligner generally takes a gene annotation file in GTF format as input, so
+  it adds a `GX` tag to indicate which gene a read is mapped to. In the CellRanger cell-by-gene UMI
+  matrix, it only uses reads with the `GX` tag. Of note, the anti-sense reads do **not** have a
+  GX tag. Here, you can use this command to get the reads without a `GX` tag:
   ```bat
      samtools view YOUR_CellRanger_outs_Bam_file | \
-        grep -v "xf:i:25" > YOUR_CellRanger_outs-xf_non25.sam
+        grep -vE "xf:i:25|xf:i:17" > YOUR_CellRanger_outs-xf_non17.sam
   ```
+
+  See more discussions [here](https://kb.10xgenomics.com/hc/en-us/articles/115003710383), but **note** that
+  tag 25 only refers to the representive reads for an UMI count, so we should remove tag 17, too.
+  See the reference about the `xf:i` tag
+  [here](https://support.10xgenomics.com/single-cell-gene-expression/software/pipelines/latest/output/bam#bam-align-tags).
+  
 
 Once again, STAR has nice support to take bam as input and additional command 
 line, so now you can re-align the unmapped or uncounted reads to viral genomes 
@@ -123,7 +129,7 @@ zcat filtered_feature_bc_matrix/barcodes.tsv.gz | awk '{print substr($0, 1, leng
 ```
 
 ## Step 3: extract your viral UMI count matrix
-Nicely, STARsolo returns count matrix for cell-by-virus, e.g., in `Solo.out/Gene/raw/` folder.
+Nicely, STARsolo returns a count matrix for cell-by-virus, e.g., in `Solo.out/Gene/raw/` folder.
 
 In case you may want to quickly view the total reads mapped to each virus. 
 You can use the versatile samtools by its ``idxstat`` (you may need to sort the 
