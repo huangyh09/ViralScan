@@ -86,7 +86,7 @@ missing potential information).
   see more discussions
   [here](https://kb.10xgenomics.com/hc/en-us/articles/360004689632).
   ```bat
-     samtools view -f 4 YOUR_CellRanger_outs_Bam_file > YOUR_CellRanger_outs-f_4.sam
+  samtools view -f 4 YOUR_CellRanger_outs_Bam_file > YOUR_CellRanger_outs-f_4.sam
   ```
 
 * **Keep uncounted reads**:
@@ -95,8 +95,8 @@ missing potential information).
   matrix, it only uses reads with the `GX` tag. Of note, the anti-sense reads do **not** have a
   GX tag. Here, you can use this command to get the reads without a `GX` tag:
   ```bat
-     samtools view YOUR_CellRanger_outs_Bam_file | \
-        grep -vE "xf:i:25|xf:i:17" > YOUR_CellRanger_outs-xf_non17.sam
+  samtools view YOUR_CellRanger_outs_Bam_file | \
+     grep -vE "xf:i:25|xf:i:17" > YOUR_CellRanger_outs-xf_non17.sam
   ```
 
   See more discussions [here](https://kb.10xgenomics.com/hc/en-us/articles/115003710383), but **note** that
@@ -112,7 +112,7 @@ by a single command line, for example,
 ```bat
 STAR --runThreadN 20 --genomeDir YOUR_Ref_DIR \
     --soloType Droplet --soloCBwhitelist YOUR_cell_list \
-    --readFilesIn YOUR_CellRanger_outs-xf_non25.sam  \
+    --readFilesIn YOUR_CellRanger_outs-xf_non17.sam  \
     --readFilesType SAM SE \
     --soloInputSAMattrBarcodeSeq CR UR \
     --soloInputSAMattrBarcodeQual CY UY \
